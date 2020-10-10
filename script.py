@@ -41,12 +41,39 @@ def from_api():
 		for j, e in s.items():
 			temp.append([i, j, *e])
 	df = pd.DataFrame(temp, columns=["season", "episode", "title", "rating"])
-	df.to_csv(f"{SHOW}_data.csv")
+	df.to_csv(f"{SHOW}_data.csv", index=False)
 	return df
 
 try:
 	df = pd.read_csv(f"{SHOW}_data.csv")
+	print(df.columns)
 except FileNotFoundError:
 	df = from_api()
 
-print(df)
+import numpy as np
+r = df['rating']
+z_scores = (r - r.mean()) / r.std()
+p = np.exp(z_scores)
+p /= p.sum()
+p = p.fillna(0)
+assert float('nan') != float('nan')
+assert np.all(p == p)
+assert np.isclose(p.sum(), 1)
+
+i = np.random.choice(len(p), p=p)
+ep = df.iloc[i]
+
+season = ep['season']
+episode = ep['episode']
+name = ep['title']
+rating = ep['rating']
+
+print(f"Season {season}, Episode {episode}\n{name} ({rating})")
+rating = input(f"Give this episode a rating (0-10) or Enter to skip\nRating: ")
+rating = handle_nan(rating)
+if rating < 0 or rating > 10:
+	raise ValueError("Ratings must be between 0 and 10")
+
+if not np.isnan(rating):
+	df.loc[i, 'rating'] = (df.loc[i, 'rating'] + rating) / 2
+df.to_csv(f"{SHOW}_data.csv", index=False)
