@@ -1,0 +1,12 @@
+Go to http://www.omdbapi.com/apikey.aspx to gain access to an omdbapi key.
+Store the key into a file named apikey (with any extension)
+
+Then run ./script.py SHOW
+
+With some show name, for example, 
+
+./script futurama
+
+or
+
+./script simpsons
