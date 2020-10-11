@@ -1,5 +1,5 @@
 Go to http://www.omdbapi.com/apikey.aspx to gain access to an omdbapi key.
-Store the key into a file named apikey (with any extension)
+Store the key into a file named api.key (with any extension)
 
 Then run ./script.py SHOW
 

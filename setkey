@@ -1,0 +1,6 @@
+if [ $# -eq 1 ];
+then
+	echo $1 > api.key
+else
+	echo "Run 'setkey key' where key is your api key for OMDb."
+fi
