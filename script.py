@@ -1,83 +1,49 @@
 #!/usr/bin/env python
-import requests
-import sys
 import pandas as pd
-
-if len(sys.argv) != 2:
-	raise Exception("Must use as './script.py futurama'")
-SHOW = sys.argv[1]
-
-try:
-	with open("apikey") as file:
-		KEY = file.read().strip()
-except FileNotFoundError:
-	raise FileNotFoundError(f"Missing omdbapi key. Store it in file 'apikey'.")
-
-def handle_nan(n):
-	try:
-		return float(n)
-	except ValueError as e:
-		return float('nan')
-
-def from_api():
-	show_info = requests.get(f"http://www.omdbapi.com/?t={SHOW}&apikey={KEY}").json()
-
-	id = show_info['imdbID']
-	total_seasons = int(show_info['totalSeasons'])
-
-	def f(id, num_seasons, KEY):
-		seasons = {}
-		for i in range(1, num_seasons+1):
-			temp = requests.get(f"http://www.omdbapi.com/?i={id}&Season={i}&apikey={KEY}").json()
-			seasons[i] = {}
-			for entry in temp['Episodes']:
-				seasons[i][int(entry['Episode'])] = (entry['Title'], handle_nan(entry['imdbRating']))
-		return seasons
-
-	seasons = f(id, total_seasons, KEY)
-
-	temp = []
-	for i, s in seasons.items():
-		for j, e in s.items():
-			temp.append([i, j, *e, float('nan')])
-	df = pd.DataFrame(temp, columns=["season", "episode", "title", "rating", "date"])
-	df.to_csv(f"{SHOW}_data.csv", index=False)
-	return df
-
-try:
-	df = pd.read_csv(f"{SHOW}_data.csv")
-except FileNotFoundError:
-	df = from_api()
-
-recently_seen = df.nlargest(len(df)//5, columns=['date'])
-
 import numpy as np
-r = df.iloc[df.index.difference(recently_seen.index)]['rating']
-z_scores = (r - r.mean()) / r.std()
-p = np.exp(z_scores)
-p /= p.sum()
-p = p.fillna(0)
-assert float('nan') != float('nan')
-assert np.all(p == p)
-assert np.isclose(p.sum(), 1)
+import sys
+from time import time as now
+from data_tools import load, save, parse_float
 
-i = np.random.choice(len(p), p=p)
-ep = df.iloc[i]
+def get_show() -> str:
+	if len(sys.argv) != 2:
+		raise Exception("Must use as './script.py show-name'\n\nFor example, './script.py futurama'")
+	return sys.argv[1]
 
-season = ep['season']
-episode = ep['episode']
-name = ep['title']
-rating = ep['rating']
+def recently_seen(data: pd.DataFrame) -> pd.Index:
+	return data.nlargest(len(data)//5, columns=['date'])
 
-print(f"Season {season}, Episode {episode}\n{name} ({rating})")
-rating = input(f"Give this episode a rating (0-10) or Enter to skip\nRating: ")
-rating = handle_nan(rating)
-if rating < 0 or rating > 10:
-	raise ValueError("Ratings must be between 0 and 10")
+def not_recently_seen(data: pd.DataFrame) -> pd.Index:
+	return data.iloc[data.index.difference(recently_seen(data).index)]
 
+def algorithm(ratings):
+	z_scores = (ratings - ratings.mean()) / ratings.std()
+	p = np.exp(z_scores)
+	p /= p.sum()
+	p = p.fillna(0)
+	return p
 
-if not np.isnan(rating):
-	from time import time as now
-	df.loc[i, 'rating'] = (df.loc[i, 'rating'] + rating) / 2
-	df.loc[i, 'date'] = now()
-	df.to_csv(f"{SHOW}_data.csv", index=False)
+def prompt(season, episode, title):
+	print(f'Season {season}, Episode {episode}\n{title}')
+	rating = input(f'Give this episode a rating (0-10) or Enter to skip\nRating: ')
+	rating = parse_float(rating)
+	if rating < 0 or rating > 10:
+		raise ValueError('Ratings must be between 0 and 10')
+	return rating
+
+def __main__():
+	show = get_show()
+	data = load(show)
+	ratings = not_recently_seen(data)['rating']
+	p = algorithm(ratings)
+	i = np.random.choice(len(p), p=p)
+	entry = data.iloc[i]
+	rating = prompt(season=entry['season'], episode=entry['episode'], title=entry['title'])
+
+	if not np.isnan(rating):
+		data.loc[i, 'rating'] = (data.loc[i, 'rating'] + rating) / 2
+		data.loc[i, 'date'] = now()
+		save(data, show)
+
+if __name__ == '__main__':
+	__main__()
