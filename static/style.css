@@ -1,0 +1,49 @@
+body {
+	font-family: system-ui, sans-serif;
+	color: navy;
+	background-color: lightblue;
+}
+
+h1 {
+	color: navy;
+	font-size: 4em;
+	text-align: center;
+}
+h2 {
+	color: navy;
+	font-size:2em;
+	text-align: center
+}
+form { 
+	vertical-align: top;
+	font-family: system-ui, sans-serif;
+	color: navy;
+	text-align: center;
+}
+input {
+	vertical-align: top;
+	font-family: system-ui, sans-serif;
+	color: navy;
+	text-align: center;
+}
+button {
+	vertical-align: top;
+	font-family: system-ui, sans-serif;
+	color: navy;
+}
+.find {
+	width: 50%; 
+	height: 10%; 
+	font-size: 1.5em;
+}
+
+.rate input {
+	height: 10%;
+	font-size: 2em;
+	width: 10%
+}
+.rate button {
+	height: 10%;
+	font-size: 1.5em;
+	width: 40%
+}

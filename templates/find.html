@@ -1,0 +1,19 @@
+<head>
+	<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+	<h1>{{title}}</h1>
+	<h2>Season {{season}} - Episode {{episode}}</h2>
+	<form action="/rate/{{show}}/{{i}}" class="rate" method="post">
+		<input type="number" name="rating" min="1" max="10" value="10"></td>
+		<button type="submit">
+			Rate it?
+		</button>
+	</form>
+	<form action="/pick" method="get">
+		<input type="hidden" name="show" value="{{show}}"/>
+		<button class="find" type="submit">
+			Watch another?
+		</button>
+	</form>
+</body>
