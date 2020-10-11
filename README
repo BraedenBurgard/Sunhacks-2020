@@ -1,12 +1,15 @@
-Go to http://www.omdbapi.com/apikey.aspx to gain access to an omdbapi key.
-Store the key into a file named api.key (with any extension)
+There are two usage methods, CLI and website.
 
-Then run ./script.py SHOW
+Both versions require an OMDb api key. In order to access one, go to http://www.omdbapi.com/apikey.aspx and enter your email. You should recieve an email with a code. Place the key into a file name 'api.key' or alternatively execute './setkey KEY' (for example, './setkey 12345678').
 
-With some show name, for example, 
+To run the CLI version, execute './script show'.
+For example './script futurama'
 
-./script futurama
+This script will select a random episode of the given show (or throw an error if the show is not found). After selecting an episode, the user will be prompted to rate the previous episode or they can skip by just pressing enter.
 
-or
+To run the web version, run 'python app.py'. 
+After executing that command, go to http://127.0.0.1:5000/
+The site will first ask what show you want to watch. After selecting a show, the site will either give an error message or select a random episode. You may either rate the episode or select another random episode.
 
-./script simpsons
+The selection algorithm will prioritize shows that have higher ratings (initially pulled from OMDb, but modified by your own ratings). Additionally, the algorithm will never select an episode that has been recently rated (you must watch 20% of the total available episodes before that episode can be selected again). When providing ratings, your rating will be averaged with the current rating. 
+

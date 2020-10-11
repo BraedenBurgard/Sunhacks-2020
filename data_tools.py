@@ -25,6 +25,8 @@ def save(data: pd.DataFrame, show: str):
 
 def default(show: str, api_key: str) -> pd.DataFrame:
 	show_info = requests.get(f'http://www.omdbapi.com/?t={show}&apikey={api_key}').json()
+	if show_info['Response'] == "False":
+		raise Exception(f"OMDb does not list {show}.")
 	id = show_info['imdbID']
 	total_seasons = int(show_info['totalSeasons'])
 	# title = show_info['Title']
