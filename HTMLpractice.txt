@@ -15,5 +15,9 @@ body {
 <h1>Website</h1>
 <p>A website created by me.</p>
 
+<?PHP
+echo shell_exec("python script.py 'parameter1'");
+?>
+
 </body>
 </html>
