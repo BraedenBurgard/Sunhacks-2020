@@ -39,19 +39,20 @@ def from_api():
 	temp = []
 	for i, s in seasons.items():
 		for j, e in s.items():
-			temp.append([i, j, *e])
-	df = pd.DataFrame(temp, columns=["season", "episode", "title", "rating"])
+			temp.append([i, j, *e, float('nan')])
+	df = pd.DataFrame(temp, columns=["season", "episode", "title", "rating", "date"])
 	df.to_csv(f"{SHOW}_data.csv", index=False)
 	return df
 
 try:
 	df = pd.read_csv(f"{SHOW}_data.csv")
-	print(df.columns)
 except FileNotFoundError:
 	df = from_api()
 
+recently_seen = df.nlargest(len(df)//5, columns=['date'])
+
 import numpy as np
-r = df['rating']
+r = df.iloc[df.index.difference(recently_seen.index)]['rating']
 z_scores = (r - r.mean()) / r.std()
 p = np.exp(z_scores)
 p /= p.sum()
@@ -74,6 +75,9 @@ rating = handle_nan(rating)
 if rating < 0 or rating > 10:
 	raise ValueError("Ratings must be between 0 and 10")
 
+
 if not np.isnan(rating):
+	from time import time as now
 	df.loc[i, 'rating'] = (df.loc[i, 'rating'] + rating) / 2
-df.to_csv(f"{SHOW}_data.csv", index=False)
+	df.loc[i, 'date'] = now()
+	df.to_csv(f"{SHOW}_data.csv", index=False)
