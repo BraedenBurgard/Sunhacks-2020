@@ -23,27 +23,31 @@ def algorithm(ratings):
 	p = p.fillna(0)
 	return p
 
-def prompt(season, episode, title):
-	print(f'Season {season}, Episode {episode}\n{title}')
-	rating = input(f'Give this episode a rating (0-10) or Enter to skip\nRating: ')
-	rating = parse_float(rating)
-	if rating < 0 or rating > 10:
-		raise ValueError('Ratings must be between 0 and 10')
-	return rating
-
-def __main__():
-	show = get_show()
+def select_episode(show):
 	data = load(show)
 	ratings = not_recently_seen(data)['rating']
 	p = algorithm(ratings)
 	i = np.random.choice(len(p), p=p)
 	entry = data.iloc[i]
-	rating = prompt(season=entry['season'], episode=entry['episode'], title=entry['title'])
+	return i, entry['season'], entry['episode'], entry['title']
+
+def rate_episode(show, i, rating):
+	rating = parse_float(rating)
+	if rating < 0 or rating > 10:
+		raise ValueError('Ratings must be between 0 and 10')
 
 	if not np.isnan(rating):
+		data = load(show)
 		data.loc[i, 'rating'] = (data.loc[i, 'rating'] + rating) / 2
 		data.loc[i, 'date'] = now()
 		save(data, show)
+
+def __main__():
+	show = get_show()
+	i, season, episode, title = select_episode(show)
+	print(f'Season {season}, Episode {episode}\n{title}')
+	rating = input(f'Give this episode a rating (0-10) or Enter to skip\nRating: ')
+	rate_episode(show, i, rating)
 
 if __name__ == '__main__':
 	__main__()
